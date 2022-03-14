@@ -1,10 +1,10 @@
-from multiprocessing.dummy import Array
 import deap
 import numpy
 import array
 import random
 from deap import tools, creator, base
 import bitstring
+from pyrsistent import mutant
 import scipy.spatial.distance
 import copy
 
@@ -37,17 +37,20 @@ def createAntibodies(baseVirus, closePrecent, diff):
 baseVirus = []
 for i in range(0,numVirus):
     baseVirus.append(newVirusOrAntibody())
-
+#might want to add a third parameter to account for a specific virus we are targetting.
 def fitnessFunction(epitotes, antibode):
-    return (max(map(lambda x : scipy.spatial.distance.hamming(x,antibode) * epitotesSize,epitotes))),
-
+    return (singleFitness(epitotes, antibode), generalFitness(epitotes, antibode))
+#How well against of the virus's in our study?
+def singleFitness(epitotes, antibode):
+    return max(map(lambda x : scipy.spatial.distance.hamming(x,antibode) * epitotesSize,epitotes))
+#How well against the whole collection?
 def generalFitness(epitotes, antibode):
-     (sum(map(lambda x : scipy.spatial.distance.hamming(x,antibode) * epitotesSize,epitotes))),
+    return sum(map(lambda x : scipy.spatial.distance.hamming(x,antibode) * epitotesSize,epitotes))/(len(epitotes))
 
 def randomsingleMutation(antibody):
     antibody.invert(random.randint(0,len(antibody) - 1))
 
-creator.create("FitnessMax",base.Fitness,weights = (1.0,))
+creator.create("FitnessMax",base.Fitness,weights = (1.0, 0.1))
 creator.create("BCell",list,fitness=creator.FitnessMax)
 
 toolbox = base.Toolbox()
@@ -56,11 +59,14 @@ toolbox.register("attr_new_anti",createAntibodies,baseVirus,closeAntibodyPercent
 toolbox.register("individual", tools.initIterate, creator.BCell, toolbox.attr_new_anti)
 toolbox.register("GerminalCenter", tools.initRepeat, list, toolbox.individual)
 
+toolbox.register("generalEval",lambda x:generalFitness(baseVirus,x))
 toolbox.register("evaluate",lambda x:fitnessFunction(baseVirus,x))
 toolbox.register("mutate",tools.mutFlipBit,indpb=0.1)
 toolbox.register("select",tools.selTournament, tournsize=3)
+
+
 def main():
-    pop = toolbox.GerminalCenter(n=20)
+    pop = toolbox.GerminalCenter(n=300)
     print("Start of evolution")
     MUTPB = 0.2
     fitnesses = list(map(toolbox.evaluate, pop))
@@ -76,19 +82,19 @@ def main():
     g = 0
 
     # Begin the evolution
-    while max(fits) < 100 and g < 1000:
+    while g < 1000:
         # A new generation
         g = g + 1
         print("-- Generation %i --" % g)
 
         # Select the next generation individuals
+        #I'll need to figure out how it choose individuals and how we can change that.
         offspring = toolbox.select(pop, len(pop))
         # Clone the selected individuals
         offspring = list(map(toolbox.clone, offspring))
 
         # Apply mutation
         for mutant in offspring:
-
             # mutate an individual with probability MUTPB
             if random.random() < MUTPB:
                 toolbox.mutate(mutant)
