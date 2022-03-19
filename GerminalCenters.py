@@ -42,10 +42,10 @@ def fitnessFunction(epitotes, antibode):
     return (singleFitness(epitotes, antibode), generalFitness(epitotes, antibode))
 #How well against of the virus's in our study?
 def singleFitness(epitotes, antibode):
-    return max(map(lambda x : scipy.spatial.distance.hamming(x,antibode) * epitotesSize,epitotes))
+    return max(map(lambda x : epitotesSize - (scipy.spatial.distance.hamming(x,antibode) * epitotesSize),epitotes))
 #How well against the whole collection?
 def generalFitness(epitotes, antibode):
-    return sum(map(lambda x : scipy.spatial.distance.hamming(x,antibode) * epitotesSize,epitotes))/(len(epitotes))
+    return sum(map(lambda x : epitotesSize - (scipy.spatial.distance.hamming(x,antibode) * epitotesSize),epitotes))/(len(epitotes))
 
 def randomsingleMutation(antibody):
     antibody.invert(random.randint(0,len(antibody) - 1))
@@ -82,9 +82,13 @@ def main():
     g = 0
 
     # Begin the evolution
+    
+    totaltime = 0
+    
     while g < 1000:
         # A new generation
         g = g + 1
+        totaltime = totaltime + cycletime
         print("-- Generation %i --" % g)
 
         # Select the next generation individuals
