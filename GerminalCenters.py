@@ -8,11 +8,13 @@ from pyrsistent import mutant
 import scipy.spatial.distance
 import copy
 
-numVirus = 10
+from sympy import Max
+
+numVirus = 30
 epitotesSize = 128 # the size of the epitotes and antibodies
 cycletime = 8 # the time to mutate in hours
-closeAntibodyPercentage = 50 #values between 0-100
-diff = 25 #the difference between the antibody and the virus
+closeAntibodyPercentage = 20 #values between 0-100
+diff = 45 #the difference between the antibody and the virus
 def newVirusOrAntibody():
     base = []
     for i in range(0,128):
@@ -50,7 +52,7 @@ def generalFitness(epitotes, antibode):
 def randomsingleMutation(antibody):
     antibody.invert(random.randint(0,len(antibody) - 1))
 
-creator.create("FitnessMax",base.Fitness,weights = (1.0, 0.1))
+creator.create("FitnessMax",base.Fitness,weights = (1.0,10.0))
 creator.create("BCell",list,fitness=creator.FitnessMax)
 
 toolbox = base.Toolbox()
@@ -66,9 +68,9 @@ toolbox.register("select",tools.selTournament, tournsize=3)
 
 
 def main():
-    pop = toolbox.GerminalCenter(n=300)
+    pop = toolbox.GerminalCenter(n=1000)
     print("Start of evolution")
-    MUTPB = 0.2
+    MUTPB = 0.5
     fitnesses = list(map(toolbox.evaluate, pop))
     for ind, fit in zip(pop, fitnesses):
         print(fit)
@@ -77,6 +79,7 @@ def main():
     print("  Evaluated %i individuals" % len(pop))
 
     fits = [ind.fitness.values[0] for ind in pop]
+    fits2 = [ind.fitness.values[1] for ind in pop]
 
     # Variable keeping track of the number of generations
     g = 0
@@ -89,7 +92,7 @@ def main():
         # A new generation
         g = g + 1
         totaltime = totaltime + cycletime
-        print("-- Generation %i --" % g)
+        print("-- Generation %i -- At time %i" % (g,totaltime))
 
         # Select the next generation individuals
         #I'll need to figure out how it choose individuals and how we can change that.
@@ -117,16 +120,22 @@ def main():
 
         # Gather all the fitnesses in one list and print the stats
         fits = [ind.fitness.values[0] for ind in pop]
+        fits2 = [ind.fitness.values[1] for ind in pop]
+
 
         length = len(pop)
         mean = sum(fits) / length
         sum2 = sum(x*x for x in fits)
         std = abs(sum2 / length - mean**2)**0.5
-
-        print("  Min %s" % min(fits))
-        print("  Max %s" % max(fits))
-        print("  Avg %s" % mean)
-        print("  Std %s" % std)
+        mean2 = sum(fits2) / length
+        sum2 = sum(x*x for x in fits2)
+        std2 = abs(sum2 / length - mean2**2)**0.5
+        print("  Min %s %s" % (min(fits),min(fits2)))
+        print("  Max %s %s" % (max(fits) , max(fits2)))
+        print("  Avg Vs 1 %s" % mean)
+        print("  Std Vs 1 %s" % std)
+        print("  Avg Vs all %s" % mean2)
+        print("  Std Vs all %s" % std2)
 
     print("-- End of (successful) evolution --")
 
