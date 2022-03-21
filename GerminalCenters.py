@@ -1,3 +1,4 @@
+import csv
 import deap
 import numpy
 import array
@@ -18,7 +19,7 @@ cycletime = 8 # the time to mutate in hours
 closeAntibodyPercentage = 20 #values between 0-100
 diff = 45 #the difference between the antibody and the virus
 sameVirus = False #whether the multiple germinal centers are fighting the same virus.
-numberOfGernimalCenters =2 #The number of germinal centers
+numberOfGernimalCenters =5 #The number of germinal centers
 numberToTransport = 5 #the number of B Cells to share
 def newVirusOrAntibody():
     base = []
@@ -56,7 +57,15 @@ else:
         baseViruses.append(copy.deepcopy(baseVirus))
 print(baseViruses[0])
 
-
+totalDataV1 = []
+totalDataVAll = []
+totalAveragesV1 = []
+totalAveragesVAll = []
+for i in range(0,numberOfGernimalCenters+1):
+    totalDataV1.append([])
+    totalDataVAll.append([])
+    totalAveragesV1.append([])
+    totalAveragesVAll.append([])
 #might want to add a third parameter to account for a specific virus we are targetting.
 def fitnessFunction(epitotes, antibode):
     return (singleFitness(epitotes[germinalIndex], antibode), generalFitness(epitotes[germinalIndex], antibode))
@@ -110,10 +119,13 @@ def main():
     
     totaltime = 0
     germinalIndex = 0
-    while g < 1000:
+    while g < 100:
         # A new generation
         g = g + 1
-        totaltime = totaltime + cycletime
+        totalDataV1[0].append(totaltime)
+        totalDataVAll[0].append(totaltime)
+        totalAveragesV1[0].append(totaltime)
+        totalAveragesVAll[0].append(totaltime)
         for pop in pops:
             
             print("-- Generation %i -- At time %i For Center %i" % (g,totaltime, germinalIndex))
@@ -171,11 +183,32 @@ def main():
             print("  Avg Vs all %s" % mean2)
             print("  Std Vs all %s" % std2)
             germinalIndex += 1
+            totalDataV1[germinalIndex].append(max(fits))
+            totalDataVAll[germinalIndex].append(max(fits2))
+            totalAveragesV1[germinalIndex].append(mean)
+            totalAveragesVAll[germinalIndex].append(mean2)
         germinalIndex = 0
+        totaltime = totaltime + cycletime
 
     print("-- End of (successful) evolution --")
     for pop in pops:
         best_ind = tools.selBest(pop, 1)[0]
         print("Best individual is %s, %s" % (best_ind, best_ind.fitness.values))
+    f1 = open("BestAgainstAll.csv","w",newline="")
+    writer = csv.writer(f1)
+    writer.writerows(totalDataVAll)
+    f1.close()
+    f1 = open("AveragesAgainst1.csv","w",newline="")
+    writer = csv.writer(f1)
+    writer.writerows(totalAveragesV1)
+    f1.close()
+    f1 = open("AverageAgainstAll.csv","w",newline="")
+    writer = csv.writer(f1)
+    writer.writerows(totalAveragesVAll)
+    f1.close()
+    f1 = open("BestAgainst1.csv","w",newline="")
+    writer = csv.writer(f1)
+    writer.writerows(totalDataV1)
+    f1.close()
 if __name__ == "__main__":
     main()
