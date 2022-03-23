@@ -14,12 +14,12 @@ from sympy import Max
 global germinalIndex
 germinalIndex = 0
 numVirus = 30
-epitotesSize = 128 # the size of the epitotes and antibodies
+epitotesSize = 48 # the size of the epitotes and antibodies
 cycletime = 8 # the time to mutate in hours
-closeAntibodyPercentage = 20 #values between 0-100
-diff = 45 #the difference between the antibody and the virus
-sameVirus = False #whether the multiple germinal centers are fighting the same virus.
-numberOfGernimalCenters =5 #The number of germinal centers
+closeAntibodyPercentage = 50 #values between 0-100
+diff = 30 #the difference between the antibody and the virus
+sameVirus = True #whether the multiple germinal centers are fighting the same virus.
+numberOfGernimalCenters =12 #The number of germinal centers
 numberToTransport = 5 #the number of B Cells to share
 def newVirusOrAntibody():
     base = []
@@ -98,7 +98,7 @@ def main():
     global germinalIndex
     pops = []
     for i in range(0,numberOfGernimalCenters):
-        pops.append(toolbox.GerminalCenter(n=300))
+        pops.append(toolbox.GerminalCenter(n=100))
     print("Start of evolution")
     MUTPB = 0.5
     for pop in pops:
@@ -151,7 +151,7 @@ def main():
                 if(random1 < random2):
                     exchangedBCells = otherPop[random1: random2]
                     otherPop[random1:random2] = pop[random1:random2]
-                    pop[random1:random2] = exchangedBCells
+                    offspring[random1:random2] = exchangedBCells
 
             # Evaluate the individuals with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
