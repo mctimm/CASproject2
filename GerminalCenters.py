@@ -21,7 +21,7 @@ diff = 30  # the difference between the antibody and the virus
 # whether the multiple germinal centers are fighting the same virus.
 sameVirus = False
 numberOfGernimalCenters = 12  # The number of germinal centers
-numberToTransport = 25  # the number of B Cells to share
+numberToTransport = 5  # the number of B Cells to share
 
 
 def newVirusOrAntibody():
