@@ -19,9 +19,9 @@ cycletime = 8  # the time to mutate in hours
 closeAntibodyPercentage = 50  # values between 0-100
 diff = 30  # the difference between the antibody and the virus
 # whether the multiple germinal centers are fighting the same virus.
-sameVirus = True
+sameVirus = False
 numberOfGernimalCenters = 12  # The number of germinal centers
-numberToTransport = 5  # the number of B Cells to share
+numberToTransport = 25  # the number of B Cells to share
 
 
 def newVirusOrAntibody():
@@ -163,13 +163,16 @@ def main():
             if numberOfGernimalCenters > 1:
                 otherPop = pops[random.randint(0, len(pops)) % len(pops)]
                 random1 = random.randint(0, len(otherPop)) % len(otherPop)
-                random2 = random1 + numberToTransport % len(otherPop)
+                random2 = (random1 + numberToTransport) % len(otherPop)
                 print(random1)
                 print(random2)
                 if(random1 < random2):
                     exchangedBCells = otherPop[random1: random2]
                     otherPop[random1:random2] = pop[random1:random2]
                     offspring[random1:random2] = exchangedBCells
+                    for i in range(random1, random2):
+                        del otherPop[i].fitness.values
+                        del offspring[i].fitness.values
 
             # Evaluate the individuals with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
