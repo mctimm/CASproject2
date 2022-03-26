@@ -8,13 +8,14 @@ import bitstring
 from pyrsistent import mutant
 import scipy.spatial.distance
 import copy
+import os
 
 from sympy import Max
 
 global germinalIndex
 
 
-def runCode():
+def runCode(numTransport):
     germinalIndex = 0
     numVirus = 30
     epitotesSize = 48  # the size of the epitotes and antibodies
@@ -24,7 +25,8 @@ def runCode():
     # whether the multiple germinal centers are fighting the same virus.
     sameVirus = False
     numberOfGernimalCenters = 12  # The number of germinal centers
-    numberToTransport = 5  # the number of B Cells to share
+    numberToTransport = numTransport  # the number of B Cells to share
+    numberOfGens = 100
 
     def newVirusOrAntibody():
         base = []
@@ -140,7 +142,7 @@ def runCode():
 
         totaltime = 0
         germinalIndex = 0
-        while g < 10:
+        while g < numberOfGens:
             # A new generation
             g = g + 1
             totalDataV1[0].append(totaltime)
@@ -220,6 +222,13 @@ def runCode():
             best_ind = tools.selBest(pop, 1)[0]
             print("Best individual is %s, %s" %
                   (best_ind, best_ind.fitness.values))
+        newdir = str(numberOfGernimalCenters)+"_germinal_" + \
+            str(numberToTransport)+"_transport"
+        try:
+            os.mkdir(newdir)
+        except:
+            1 + 1
+        os.chdir(newdir)
         f1 = open("BestAgainstAll.csv", "w", newline="")
         writer = csv.writer(f1)
         writer.writerows(addHeaderAndTranspose(totalDataVAll))
@@ -237,8 +246,10 @@ def runCode():
         writer = csv.writer(f1)
         writer.writerows(addHeaderAndTranspose(totalDataV1))
         f1.close()
+        os.chdir("../")
     main()
 
 
 if __name__ == "__main__":
-    runCode()
+    for i in range(25):
+        runCode(i)
